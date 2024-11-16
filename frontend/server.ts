@@ -1,13 +1,22 @@
 import express, { Express, Request, Response } from "express";
+import { createServer } from "http";
 import { Collection, MongoClient, ObjectId } from "mongodb";
 import next from "next";
 
 const cors = require('cors');
 const dev = process.env.NODE_ENV !== 'production';
+console.log("BEFORE START APP");
+
 const app = next({ dev });
 const handle = app.getRequestHandler();
 
-app.prepare().then(()=>{
+app.prepare({}).then(()=>{
+  console.log("AFTER START APP");
+  createServer(handle).listen(3000, () => {
+   
+    console.log(`> Ready on http://localhost:${3000}`);
+  });
+
   const server = express()
   const port = 8000
   const mongoClient = new MongoClient("mongodb://127.0.0.1:27017/");
@@ -15,10 +24,14 @@ app.prepare().then(()=>{
   server.use(cors());
 
   (async () => {
+    console.log("express app");
+    
     try {
       await mongoClient.connect();
       server.locals.collection = mongoClient.db("vacancies_app").collection("vacancies");
       server.listen(port);
+      console.log(`Приложение запущено, port: ${port}`);
+      
   }catch(err) {
       return console.log(err);
   } 
